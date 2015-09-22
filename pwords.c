@@ -5,10 +5,7 @@
 #include <pthread.h>
 
 pthread_t tid[2];
-
-/*void *thread_function(void *);
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-int  counter = 0;*/
+pthread_mutex_t lock;
 
 typedef struct dict {
   char *word;
@@ -40,6 +37,8 @@ insert_word( happy ) {
   
   //   Insert word into dict or increment count if already there
   //   return pointer to the updated dict
+
+  pthread_mutex_lock(&lock);
   
   dict_t *nd;
   dict_t *pd = NULL;		// prior to insertion point 
@@ -59,6 +58,7 @@ insert_word( happy ) {
     pd->next = nd;
     return d;			// insert beond head 
   }
+pthread_mutex_unlock(&lock);
   return nd;
 }
 
@@ -96,14 +96,6 @@ words( FILE *infile ) {
   return wd;
 }
 
-void *thread_function(void *dummyPtr)
-{
-   printf("Thread number %ld\n", pthread_self());
-   pthread_mutex_lock( &mutex1 );
-   counter++;
-   pthread_mutex_unlock( &mutex1 );
-}
-
 int
 main( int argc, char *argv[] ) {
   dict_t *d = NULL;
@@ -131,5 +123,6 @@ main( int argc, char *argv[] ) {
 
   d = words( infile );
   print_dict( d );
+  pthread_mutex_destroy(&lock);
   fclose( infile );
 }
